@@ -1,35 +1,26 @@
 # Streaming Live RAG Engine
 
-A lightweight, real-time Retrieval-Augmented Generation (RAG) engine designed for live transcript analysis, grounded multi-turn Q&A, and low-latency retrieval in a hackathon-friendly environment.
-
-This project is tailored for a Samsung Prism Hackathon submission and demonstrates a production-inspired retrieval pipeline that blends:
-
-- dense semantic search
-- sparse keyword search
-- state-aware query routing
-- deduplicated citation generation
-- FastAPI + WebSocket streaming interfaces
-- a polished dashboard for live telemetry
+A real-time Retrieval-Augmented Generation system for grounded Question Answering over live transcript and document data. The engine combines semantic retrieval, keyword matching, state-aware routing, and citation-backed responses to support fast and context-aware knowledge access.
 
 ---
 
-## Project Goal
+## Project Overview
 
-The system answers queries against a document corpus using hybrid retrieval while avoiding unnecessary repeated searches across turns. It is built to handle conversational input that may be incomplete, multi-intent, or follow-up based, and it can decide when to wait, suppress, retrieve, or fall back.
+The system answers queries against a document corpus while reducing redundant retrieval across conversational turns. It can detect incomplete input, ignore formatting or conversational filler, split compound requests into sub-queries, and selectively fetch relevant context only when needed.
 
-In other words, it acts as a streaming knowledge layer that decides whether a new turn needs external context and then grounds the answer with relevant source citations.
+This makes it suitable for live assistants, support agents, knowledge copilots, and any workflow requiring fast grounding over a curated corpus.
 
 ---
 
-## Why this project is useful
+## Why this project matters
 
-This project is useful for any scenario where users ask questions from a live knowledge base, event guide, troubleshooting docs, internal wiki, or support corpus. It is especially suited for:
+Modern retrieval systems often over-query, re-fetch identical information, or respond without clear evidence. This project addresses those issues by combining:
 
-- event planning and registration queries
-- hackathon or operational FAQ handling
-- live customer support workflows
-- chat-like interfaces with grounded document responses
-- retrieval systems that need efficient multi-turn memory and context caching
+- semantic retrieval for meaning-based matching
+- sparse retrieval for exact term matching
+- session-aware state tracking to reduce unnecessary recomputation
+- citation-grounded results for explainability and trust
+- streaming interfaces for real-time interactions
 
 ---
 
@@ -208,22 +199,22 @@ Open the Streamlit UI at:
 
 ---
 
-## Demo usage
+## Example usage
 
-The app includes a sample corpus for event / hackathon knowledge, including:
+The project includes a sample corpus for event and operational knowledge, including:
 
 - venue capacity
 - registration deadlines
 - cancellation refund rules
-- hackathon submission requirements
-- support channels and API constraints
+- submission requirements
+- support channels and policy constraints
 
 Example queries you can test:
 
 ```text
 What is the venue capacity and what is the cancellation fee?
 What is the main event venue capacity in Pune?
-All hackathon project submissions deadline
+When are submissions due?
 Please summarize in bullet points
 ```
 
@@ -304,20 +295,6 @@ Current verification status:
 
 ---
 
-## Hackathon Notes
-
-This project is designed to showcase a clean, understandable retrieval architecture with:
-
-- real-time user input handling
-- hybrid search quality improvements
-- efficiency gains through state differ logic
-- human-readable telemetry for judges and reviewers
-- a presentable end-user experience
-
-It is intentionally structured to be easy to explain, demo, and extend for additional domains beyond event support or hackathon operations.
-
----
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
@@ -326,6 +303,4 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## Acknowledgements
 
-This project combines modern retrieval tooling, Qdrant vector search, and a structured conversational pipeline to demonstrate a realistic, demo-ready RAG workflow.
-
-If you are preparing this project for a Samsung Prism Hackathon submission, this repository is ready to be adapted for your pitch deck, architecture slides, and final submission package.
+This project combines modern retrieval tooling, Qdrant vector search, and a structured conversational pipeline to demonstrate a realistic, production-ready RAG workflow for grounded knowledge access.
