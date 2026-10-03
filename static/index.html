@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Streaming Live RAG Engine | Glassmorphism Console</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #060913;
+            --glass-bg: rgba(15, 23, 42, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --glass-hover-border: rgba(0, 240, 255, 0.4);
+            --cyan-glow: #00f0ff;
+            --purple-glow: #a855f7;
+            --emerald-glow: #10b981;
+            --amber-glow: #f59e0b;
+            --rose-glow: #f43f5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 10% 10%, rgba(0, 240, 255, 0.08) 0px, transparent 50%),
+                radial-gradient(at 90% 10%, rgba(168, 85, 247, 0.08) 0px, transparent 50%),
+                radial-gradient(at 50% 90%, rgba(16, 185, 129, 0.05) 0px, transparent 50%),
+                radial-gradient(#1e293b 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Container */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(18px) saturate(180%);
+            -webkit-backdrop-filter: blur(18px) saturate(180%);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px 0 rgba(0, 0, 0, 0.35);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-panel:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 14px 40px 0 rgba(0, 0, 0, 0.45);
+        }
+
+        /* Top Header HUD */
+        header {
+            padding: 1rem 2rem;
+            margin: 1rem 1.5rem 0.5rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand-title {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.8rem;
+            background: linear-gradient(135deg, #00f0ff 0%, #a855f7 50%, #ec4899 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            letter-spacing: -0.5px;
+        }
+
+        .hud-status-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            font-family: 'Fira Code', monospace;
+            border: 1px solid transparent;
+        }
+
+        .badge-online {
+            background: rgba(16, 185, 129, 0.12);
+            border-color: rgba(16, 185, 129, 0.35);
+            color: #34d399;
+        }
+
+        .badge-version {
+            background: rgba(0, 240, 255, 0.12);
+            border-color: rgba(0, 240, 255, 0.35);
+            color: #38bdf8;
+        }
+
+        .badge-latency {
+            background: rgba(168, 85, 247, 0.12);
+            border-color: rgba(168, 85, 247, 0.35);
+            color: #c084fc;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #34d399;
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 10px #34d399;
+            animation: pulse-animation 1.5s infinite;
+        }
+
+        @keyframes pulse-animation {
+            0% { opacity: 0.4; transform: scale(0.9); }
+            50% { opacity: 1; transform: scale(1.25); }
+            100% { opacity: 0.4; transform: scale(0.9); }
+        }
+
+        /* Main Grid Layout */
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.25rem;
+            padding: 0.5rem 1.5rem 1.5rem 1.5rem;
+            flex: 1;
+        }
+
+        @media (max-width: 1200px) {
+            .main-container {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .column-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .panel-header {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.5rem;
+        }
+
+        /* Controls & Form Elements */
+        textarea.glass-input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: #f8fafc;
+            padding: 12px 16px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 110px;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        textarea.glass-input:focus {
+            border-color: var(--cyan-glow);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);
+        }
+
+        .presets-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .chip {
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .chip:hover {
+            background: rgba(0, 240, 255, 0.15);
+            border-color: var(--cyan-glow);
+            color: var(--cyan-glow);
+            transform: translateY(-1px);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            font-family: 'Outfit', sans-serif;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00f0ff, #3b82f6);
+            color: #030712;
+            box-shadow: 0 4px 20px rgba(0, 240, 255, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 28px rgba(0, 240, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-speech {
+            background: linear-gradient(135deg, #a855f7, #ec4899);
+            color: #ffffff;
+            box-shadow: 0 4px 20px rgba(168, 85, 247, 0.3);
+        }
+
+        .btn-speech:hover {
+            box-shadow: 0 6px 28px rgba(168, 85, 247, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #f1f5f9;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(51, 65, 85, 0.9);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* 5-Gate Logic Visualizer */
+        .gate-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .gate-card {
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+
+        .gate-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .gate-name {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #cbd5e1;
+        }
+
+        .gate-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .gate-status-pill {
+            font-size: 0.72rem;
+            font-family: 'Fira Code', monospace;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #64748b;
+        }
+
+        /* Active Gate Highlighting */
+        .gate-card.active-WAIT {
+            border-color: var(--amber-glow);
+            background: rgba(245, 158, 11, 0.12);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+        }
+        .gate-card.active-WAIT .gate-status-pill {
+            background: rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+        }
+
+        .gate-card.active-SUPPRESS {
+            border-color: var(--purple-glow);
+            background: rgba(168, 85, 247, 0.12);
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+        }
+        .gate-card.active-SUPPRESS .gate-status-pill {
+            background: rgba(168, 85, 247, 0.25);
+            color: #c084fc;
+        }
+
+        .gate-card.active-COMMIT, .gate-card.active-RETRIEVE {
+            border-color: var(--cyan-glow);
+            background: rgba(0, 240, 255, 0.12);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);
+        }
+        .gate-card.active-COMMIT .gate-status-pill, .gate-card.active-RETRIEVE .gate-status-pill {
+            background: rgba(0, 240, 255, 0.25);
+            color: #38bdf8;
+        }
+
+        .gate-card.active-FALLBACK {
+            border-color: var(--rose-glow);
+            background: rgba(244, 63, 94, 0.12);
+            box-shadow: 0 0 15px rgba(244, 63, 94, 0.2);
+        }
+        .gate-card.active-FALLBACK .gate-status-pill {
+            background: rgba(244, 63, 94, 0.25);
+            color: #fb7185;
+        }
+
+        /* Reasoning Card */
+        .reason-box {
+            padding: 12px 16px;
+            background: rgba(30, 41, 59, 0.5);
+            border-left: 3px solid var(--cyan-glow);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            line-height: 1.4;
+        }
+
+        /* Entity & Knowledge Graph Pills */
+        .entity-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.5rem;
+        }
+
+        .entity-pill {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+        }
+
+        .entity-pill.delta-new {
+            background: rgba(16, 185, 129, 0.18);
+            border-color: var(--emerald-glow);
+            color: #34d399;
+            box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Citation Cards */
+        .citation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            max-height: 380px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .citation-card {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 14px;
+            transition: all 0.25s ease;
+        }
+
+        .citation-card:hover {
+            border-color: rgba(168, 85, 247, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .citation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .citation-tag {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.78rem;
+            font-weight: 700;
+            background: rgba(168, 85, 247, 0.2);
+            border: 1px solid rgba(168, 85, 247, 0.5);
+            color: #e9d5ff;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .rrf-score {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .citation-text {
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            line-height: 1.45;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(3, 7, 18, 0.8);
+            backdrop-filter: blur(12px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 550px;
+            padding: 2rem;
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 240, 255, 0.4);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header HUD -->
+    <header class="glass-panel">
+        <div class="brand-title">
+            <span>⚡ STREAMING LIVE RAG ENGINE</span>
+        </div>
+        <div class="hud-status-bar">
+            <div id="ws-status" class="badge badge-online">
+                <div class="pulse-dot"></div> ENGINE ONLINE (WS)
+            </div>
+            <div id="state-version-tag" class="badge badge-version">
+                STATE: v1
+            </div>
+            <div id="latency-tag" class="badge badge-latency">
+                P95: 0 ms
+            </div>
+            <button onclick="openIngestModal()" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.8rem; min-width: auto;">
+                + Add Custom Doc
+            </button>
+            <button onclick="resetSession()" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.8rem; min-width: auto;">
+                🔄 Reset State (v1)
+            </button>
+        </div>
+    </header>
+
+    <!-- Main 3-Column Layout -->
+    <div class="main-container">
+
+        <!-- Column 1: Speech / Text Buffer Console -->
+        <div class="column-panel">
+            <div class="glass-panel" style="padding: 1.25rem;">
+                <div class="panel-header">
+                    <span>🎙️ Live Speech Transcript Stream</span>
+                </div>
+
+                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">
+                    Scenario Presets (Click to Load):
+                </label>
+                <div class="presets-grid">
+                    <div class="chip" onclick="loadPreset('What is the venue capacity and what is the cancellation fee?')">
+                        Venue Capacity & Fee
+                    </div>
+                    <div class="chip" onclick="loadPreset('All hackathon project submissions deadline')">
+                        Submission Deadline
+                    </div>
+                    <div class="chip" onclick="loadPreset('Please summarize in bullet points')">
+                        G4 Suppress (Summarize)
+                    </div>
+                    <div class="chip" onclick="loadPreset('I want to know about the')">
+                        G1 Wait (Incomplete)
+                    </div>
+                </div>
+
+                <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem;">
+                    Transcript Stream Buffer:
+                </label>
+                <textarea id="transcript-input" class="glass-input" placeholder="Type or click a scenario preset to simulate streaming speech..."></textarea>
+
+                <div class="btn-group" style="margin-top: 1rem;">
+                    <button onclick="sendPayload()" class="btn btn-primary">
+                        🚀 Stream Payload
+                    </button>
+                    <button id="speech-btn" onclick="toggleSpeechSimulation()" class="btn btn-speech">
+                        🎙️ Voice Stream
+                    </button>
+                </div>
+            </div>
+
+            <!-- Graph State Overview -->
+            <div class="glass-panel" style="padding: 1.25rem;">
+                <div class="panel-header">
+                    <span>🧠 Knowledge Graph State</span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                    Checksum: <span id="graph-checksum" style="font-family: 'Fira Code', monospace; color: var(--cyan-glow);">0x8A1000</span>
+                </div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem; color: var(--text-muted);">
+                    Active Session Entities (& Delta &Delta;):
+                </div>
+                <div id="entity-container" class="entity-cloud">
+                    <span class="entity-pill">Initial v1</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 2: 5-Gate Pipeline Visualizer -->
+        <div class="column-panel">
+            <div class="glass-panel" style="padding: 1.25rem;">
+                <div class="panel-header">
+                    <span>⚙️ 5-Gate Logic Pipeline Monitor</span>
+                </div>
+
+                <div class="gate-flow">
+                    <div id="gate-card-G1" class="gate-card">
+                        <div class="gate-info">
+                            <span class="gate-name">G1: WAIT GATE</span>
+                            <span class="gate-desc">Entropy & incomplete phrase check</span>
+                        </div>
+                        <span id="gate-pill-G1" class="gate-status-pill">IDLE</span>
+                    </div>
+
+                    <div id="gate-card-G4" class="gate-card">
+                        <div class="gate-info">
+                            <span class="gate-name">G4: SUPPRESS GATE</span>
+                            <span class="gate-desc">Bypasses search for formatting/filler</span>
+                        </div>
+                        <span id="gate-pill-G4" class="gate-status-pill">IDLE</span>
+                    </div>
+
+                    <div id="gate-card-G2" class="gate-card">
+                        <div class="gate-info">
+                            <span class="gate-name">G2: PROVISIONAL RETRIEVE</span>
+                            <span class="gate-desc">Background speculative vector probe</span>
+                        </div>
+                        <span id="gate-pill-G2" class="gate-status-pill">IDLE</span>
+                    </div>
+
+                    <div id="gate-card-G3" class="gate-card">
+                        <div class="gate-info">
+                            <span class="gate-name">G3: COMMIT GATE</span>
+                            <span class="gate-desc">Intent decomposition & RRF merge</span>
+                        </div>
+                        <span id="gate-pill-G3" class="gate-status-pill">IDLE</span>
+                    </div>
+
+                    <div id="gate-card-G5" class="gate-card">
+                        <div class="gate-info">
+                            <span class="gate-name">G5: FALLBACK GATE</span>
+                            <span class="gate-desc">Low confidence / zero match handling</span>
+                        </div>
+                        <span id="gate-pill-G5" class="gate-status-pill">IDLE</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 1rem;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">Gate Decision Reasoning:</div>
+                    <div id="gate-reason" class="reason-box">
+                        System ready. Input a stream turn payload to trigger the pipeline gates.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 3: Decomposed Intents & RRF Hybrid Citations -->
+        <div class="column-panel">
+            <div class="glass-panel" style="padding: 1.25rem;">
+                <div class="panel-header">
+                    <span>🔍 Grounded Citations & RRF Results</span>
+                </div>
+
+                <div style="margin-bottom: 0.75rem;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.3rem;">Decomposed Sub-Queries (&Delta; Delta):</div>
+                    <div id="intents-container" style="font-size: 0.82rem; line-height: 1.5; color: #cbd5e1;">
+                        <em>No active sub-queries evaluated yet.</em>
+                    </div>
+                </div>
+
+                <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.4rem;">
+                    Retrieved Documents (BM25 + Dense RRF):
+                </div>
+                <div id="citations-list" class="citation-list">
+                    <div class="citation-card">
+                        <div class="citation-header">
+                            <span class="citation-tag">[Ready]</span>
+                            <span class="rrf-score">RRF: 0.0000</span>
+                        </div>
+                        <div class="citation-text">
+                            Grounded context citations will appear here once Gate G3 commits vector search.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Custom Document Ingestion Modal -->
+    <div id="ingest-modal" class="modal-overlay">
+        <div class="glass-panel modal-content">
+            <div class="panel-header" style="justify-content: space-between;">
+                <span>📄 Ingest Custom Knowledge Document</span>
+                <span onclick="closeIngestModal()" style="cursor: pointer; color: var(--text-muted);">&times;</span>
+            </div>
+            
+            <div style="margin-bottom: 0.8rem;">
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Doc ID (e.g. Doc_07):</label>
+                <input id="modal-doc-id" type="text" value="Doc_07" class="glass-input" style="min-height: auto; padding: 8px 12px; margin-top: 4px;">
+            </div>
+
+            <div style="margin-bottom: 0.8rem;">
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Section Label (e.g. §7.1):</label>
+                <input id="modal-section" type="text" value="§7.1" class="glass-input" style="min-height: auto; padding: 8px 12px; margin-top: 4px;">
+            </div>
+
+            <div style="margin-bottom: 1rem;">
+                <label style="font-size: 0.8rem; color: var(--text-muted);">Document Content Text:</label>
+                <textarea id="modal-text" class="glass-input" style="min-height: 100px;" placeholder="Enter document text to index into hybrid dense + BM25 Qdrant store..."></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button onclick="submitIngestModal()" class="btn btn-primary">Index Document</button>
+                <button onclick="closeIngestModal()" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript logic -->
+    <script>
+        let ws;
+        let isSimulatingSpeech = false;
+        let speechTimer = null;
+
+        function initWebSocket() {
+            const loc = window.location;
+            const wsProtocol = loc.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${loc.host}/ws/stream`;
+            
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => {
+                console.log("[WebSocket] Connected to live stream backend.");
+                const statusEl = document.getElementById("ws-status");
+                statusEl.className = "badge badge-online";
+                statusEl.innerHTML = `<div class="pulse-dot"></div> ENGINE ONLINE (WS)`;
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                renderTelemetry(data);
+            };
+
+            ws.onerror = (error) => {
+                console.error("[WebSocket Error]", error);
+                const statusEl = document.getElementById("ws-status");
+                statusEl.className = "badge";
+                statusEl.style.background = "rgba(244, 63, 94, 0.15)";
+                statusEl.style.color = "#f43f5e";
+                statusEl.innerHTML = `⚠️ WS OFFLINE`;
+            };
+
+            ws.onclose = () => {
+                console.log("[WebSocket] Connection closed. Reconnecting in 2s...");
+                setTimeout(initWebSocket, 2000);
+            };
+        }
+
+        function renderTelemetry(data) {
+            const startTime = window.lastPayloadTime || Date.now();
+            const latency = data.latency || (Date.now() - startTime);
+            document.getElementById("latency-tag").innerText = `P95: ${latency} ms`;
+
+            // State Version Tag
+            const version = data.version || "v1";
+            document.getElementById("state-version-tag").innerText = `STATE: ${version}`;
+
+            // Reset Gate Highlights
+            ["G1", "G2", "G3", "G4", "G5"].forEach(g => {
+                const card = document.getElementById(`gate-card-${g}`);
+                const pill = document.getElementById(`gate-pill-${g}`);
+                card.className = "gate-card";
+                pill.className = "gate-status-pill";
+                pill.innerText = "IDLE";
+            });
+
+            // Highlight Active Gate
+            const activeGate = data.gate || "G1_WAIT";
+            const gateKey = activeGate.split("_")[0]; // E.g., G1, G3, G4, G5
+            const gateCard = document.getElementById(`gate-card-${gateKey}`);
+            const gatePill = document.getElementById(`gate-pill-${gateKey}`);
+            
+            if (gateCard && gatePill) {
+                const action = data.action || "WAIT";
+                gateCard.classList.add(`active-${action}`);
+                gatePill.innerText = action;
+            }
+
+            // Gate Reasoning
+            document.getElementById("gate-reason").innerText = data.reason || "N/A";
+
+            // Knowledge Graph Checksum & Entities
+            if (data.graph_checksum) {
+                document.getElementById("graph-checksum").innerText = data.graph_checksum;
+            }
+            const activeEntities = data.active_entities || [];
+            const addedEntities = data.added_entities || [];
+            const entityContainer = document.getElementById("entity-container");
+            
+            if (activeEntities.length > 0) {
+                entityContainer.innerHTML = activeEntities.map(e => {
+                    const isNew = addedEntities.includes(e);
+                    return `<span class="entity-pill ${isNew ? 'delta-new' : ''}">${isNew ? 'Δ ' : ''}${e}</span>`;
+                }).join('');
+            } else {
+                entityContainer.innerHTML = `<span class="entity-pill">Empty State (v1)</span>`;
+            }
+
+            // Decomposed Intents
+            const intentsContainer = document.getElementById("intents-container");
+            const intents = data.intents || [];
+            const deltaIntents = data.delta_intents || [];
+            if (intents.length > 0) {
+                intentsContainer.innerHTML = intents.map((intent, i) => {
+                    const isDelta = deltaIntents.includes(intent);
+                    const tag = isDelta ? `<span style="color:#34d399; font-weight:700;">⚡ [Δ Executed]</span>` : `<span style="color:#94a3b8;">💤 [Cached]</span>`;
+                    return `<div style="margin-bottom:4px;"><strong>${i+1}.</strong> <code>${intent}</code> — ${tag}</div>`;
+                }).join('');
+            } else {
+                intentsContainer.innerHTML = `<em>Bypassed / Incomplete turn payload.</em>`;
+            }
+
+            // Grounded Citations
+            const docsList = document.getElementById("citations-list");
+            const docs = data.retrieved_docs || [];
+            if (docs.length > 0) {
+                docsList.innerHTML = docs.map(doc => `
+                    <div class="citation-card">
+                        <div class="citation-header">
+                            <span class="citation-tag">${doc.citation || '[Doc_Ref]'}</span>
+                            <span class="rrf-score">RRF: ${(doc.score || 0).toFixed(4)}</span>
+                        </div>
+                        <div class="citation-text">${doc.text}</div>
+                    </div>
+                `).join('');
+            } else {
+                docsList.innerHTML = `
+                    <div class="citation-card" style="opacity: 0.7;">
+                        <div class="citation-header">
+                            <span class="citation-tag">[Bypassed]</span>
+                            <span class="rrf-score">RRF: 0.0000</span>
+                        </div>
+                        <div class="citation-text">
+                            ${data.reason || "No vector retrieval fired for current turn."}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function loadPreset(text) {
+            document.getElementById("transcript-input").value = text;
+            sendPayload();
+        }
+
+        function sendPayload() {
+            const text = document.getElementById("transcript-input").value.trim();
+            if (!text) return;
+            window.lastPayloadTime = Date.now();
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ transcript: text }));
+            } else {
+                // Fallback to HTTP REST
+                fetch('/api/stream', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transcript: text })
+                })
+                .then(res => res.json())
+                .then(data => renderTelemetry(data))
+                .catch(err => console.error("REST fallback failed:", err));
+            }
+        }
+
+        function resetSession() {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ command: "reset" }));
+            } else {
+                fetch('/api/reset', { method: 'POST' })
+                .then(res => res.json())
+                .then(data => renderTelemetry(data));
+            }
+        }
+
+        function toggleSpeechSimulation() {
+            const btn = document.getElementById("speech-btn");
+            if (isSimulatingSpeech) {
+                clearInterval(speechTimer);
+                isSimulatingSpeech = false;
+                btn.innerHTML = "🎙️ Voice Stream";
+                return;
+            }
+
+            const phrases = [
+                "What is the main event venue capacity in Pune",
+                "and what is the cancellation fee",
+                "also what is the hackathon project submission deadline?"
+            ];
+            
+            let phraseIdx = 0;
+            let wordIdx = 0;
+            let currentWords = [];
+
+            isSimulatingSpeech = true;
+            btn.innerHTML = "⏹️ Stop Stream";
+            document.getElementById("transcript-input").value = "";
+
+            speechTimer = setInterval(() => {
+                if (phraseIdx >= phrases.length) {
+                    clearInterval(speechTimer);
+                    isSimulatingSpeech = false;
+                    btn.innerHTML = "🎙️ Voice Stream";
+                    return;
+                }
+
+                const words = phrases[phraseIdx].split(" ");
+                if (wordIdx < words.length) {
+                    currentWords.push(words[wordIdx]);
+                    wordIdx++;
+                    const fullText = currentWords.join(" ");
+                    document.getElementById("transcript-input").value = fullText;
+                    sendPayload();
+                } else {
+                    phraseIdx++;
+                    wordIdx = 0;
+                }
+            }, 600);
+        }
+
+        function openIngestModal() {
+            document.getElementById("ingest-modal").style.display = "flex";
+        }
+
+        function closeIngestModal() {
+            document.getElementById("ingest-modal").style.display = "none";
+        }
+
+        function submitIngestModal() {
+            const doc_id = document.getElementById("modal-doc-id").value;
+            const section = document.getElementById("modal-section").value;
+            const text = document.getElementById("modal-text").value;
+
+            if (!text.trim()) return;
+
+            fetch('/api/ingest', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ documents: [{ doc_id, section, text }] })
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert(res.message || "Document indexed successfully!");
+                closeIngestModal();
+            })
+            .catch(err => alert("Ingestion failed: " + err));
+        }
+
+        window.onload = () => {
+            initWebSocket();
+        };
+    </script>
+</body>
+</html>
